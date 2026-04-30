@@ -191,6 +191,89 @@ elseif ("${PLATFORM}" STREQUAL "Memory")
     if(WIN32 OR CMAKE_C_COMPILER MATCHES "mingw|mingw32|mingw64")
         set(LIBS_PRIVATE winmm)
     endif()
+
+else() 
+    # Consoles.
+    if (NOT ${CUSTOMIZE_BUILD})
+        set(CUSTOMIZE_BUILD ON)
+    endif()
+
+    set(SUPPORT_MODULE_RAUDIO_OLD ${SUPPORT_MODULE_RAUDIO})
+    if (SUPPORT_MODULE_RAUDIO)
+        set(SUPPORT_MODULE_RAUDIO OFF)
+    endif()
+
+    set(SUPPORT_SCREEN_CAPTURE OFF)
+    set(SUPPORT_AUTOMATION_EVENTS OFF)
+    set(SUPPORT_IMAGE_EXPORT OFF)
+
+    set(SUPPORT_FILEFORMAT_OGG_OLD ${SUPPORT_FILEFORMAT_OGG})
+    if (SUPPORT_FILEFORMAT_OGG)
+        set(SUPPORT_FILEFORMAT_OGG OFF)
+    endif()
+
+    if ("${PLATFORM}" STREQUAL "Dreamcast")
+        set(PLATFORM_CPP "PLATFORM_DREAMCAST")
+        set(OPENGL_VERSION "1.1")
+        include_directories($ENV{KOS_INC_PATHS})
+
+        if (SUPPORT_MODULE_RAUDIO_OLD)
+            set(SUPPORT_MODULE_RAUDIO ON)
+        endif()
+
+    elseif ("${PLATFORM}" STREQUAL "Nintendo 64")
+        set(PLATFORM_CPP "PLATFORM_NINTENDO64")
+        set(OPENGL_VERSION "1.1")
+        add_compile_options($ENV{N64_FLAGS} -Wno-error=incompatible-pointer-types)
+
+    elseif ("${PLATFORM}" STREQUAL "GameCube")
+        set(PLATFORM_CPP "PLATFORM_GAMECUBE")
+        set(OPENGL_VERSION "1.1")
+
+        include_directories($ENV{DEVKITPRO}/libogc2/gamecube/include)
+        include_directories($ENV{DEVKITPRO}/portlibs/gamecube/include)
+
+        set(DKP_LIBOGC2_PATH "$ENV{DEVKITPRO}/libogc2/lib/gamecube")
+        set(DKP_PORTLIBS_PATH "$ENV{DEVKITPRO}/portlibs/gamecube/lib")
+
+        find_library(LIB_FAT fat HINTS ${DKP_LIBOGC2_PATH} REQUIRED)
+        find_library(LIB_OPENGX opengx HINTS ${DKP_PORTLIBS_PATH} REQUIRED)
+        find_package(OpenGL QUIET)
+        set(LIBS_PRIVATE ${LIB_FAT} ${LIB_OPENGX} ${OPENGL_LIBRARIES})
+
+        if (SUPPORT_FILEFORMAT_OGG_OLD)
+            set(SUPPORT_FILEFORMAT_OGG ON)
+        endif()
+
+    elseif ("${PLATFORM}" STREQUAL "PlayStation 2")
+        set(PLATFORM_CPP "PLATFORM_PLAYSTATION2")
+        set(OPENGL_VERSION "1.1")
+
+    elseif ("${PLATFORM}" STREQUAL "PlayStation PSP")
+        set(PLATFORM_CPP "PLATFORM_PSP")
+        set(OPENGL_VERSION "1.1")
+
+    elseif ("${PLATFORM}" STREQUAL "PlayStation PSP SDL")
+        set(PLATFORM_CPP "PLATFORM_PSP_SDL")
+        set(OPENGL_VERSION "1.1")
+
+    elseif ("${PLATFORM}" STREQUAL "PlayStation Vita")
+        set(PLATFORM_CPP "PLATFORM_PSP_SDL")
+        set(OPENGL_VERSION "ES 2.0")
+
+        if (SUPPORT_MODULE_RAUDIO_OLD)
+            set(SUPPORT_MODULE_RAUDIO ON)
+        endif()
+
+    elseif ("${PLATFORM}" STREQUAL "PlayStation 4 Orbis")
+        set(PLATFORM_CPP "PLATFORM_ORBIS")
+        set(OPENGL_VERSION "ES 2.0")
+
+    elseif ("${PLATFORM}" STREQUAL "PlayStation 5 Prospero")
+        set(PLATFORM_CPP "PLATFORM_PROSPERO")
+        set(OPENGL_VERSION "ES 2.0")
+
+    endif ()
 endif ()
 
 if (NOT ${OPENGL_VERSION} MATCHES "OFF")
@@ -225,3 +308,17 @@ set(LIBS_PRIVATE ${LIBS_PRIVATE} ${OPENAL_LIBRARY})
 if (${PLATFORM} MATCHES "Desktop")
     set(LIBS_PRIVATE ${LIBS_PRIVATE} glfw)
 endif ()
+
+set(PLATFORMS_WITHOUT_AUDIO_MODULE_SUPPORT
+    PLATFORM_DREAMCAST
+    PLATFORM_NINTENDO64
+    PLATFORM_GAMECUBE
+    PLATFORM_PLAYSTATION2
+    PLATFORM_PSP
+)
+
+if (${PLATFORM_CPP} IN_LIST PLATFORMS_WITHOUT_AUDIO_MODULE_SUPPORT)
+    set(CUSTOMIZE_BUILD ON)
+    set(SUPPORT_MODULE_RAUDIO OFF)
+endif()
+

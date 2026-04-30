@@ -51,6 +51,9 @@
 #ifndef SUPPORT_MODULE_RAUDIO
     #define SUPPORT_MODULE_RAUDIO       1
 #endif
+#ifndef SUPPORT_MODULE_RSPINE
+    #define SUPPORT_MODULE_RSPINE       1
+#endif
 
 //------------------------------------------------------------------------------------
 // Module: rcore - Configuration Flags
